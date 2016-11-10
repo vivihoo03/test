@@ -1,4 +1,4 @@
-goog={};
+goog = {};
 
 goog.base = function(me, opt_methodName, var_args) {
     var caller = arguments.callee.caller;
@@ -49,38 +49,89 @@ goog.base = function(me, opt_methodName, var_args) {
 };
 
 goog.inherits = function(childCtor, parentCtor) {
-  /** @constructor */
-  function tempCtor() {};
-  tempCtor.prototype = parentCtor.prototype;
-  childCtor.superClass_ = parentCtor.prototype;
-  childCtor.prototype = new tempCtor();
-  /** @override */
-  childCtor.prototype.constructor = childCtor;
+    /** @constructor */
+    function tempCtor() {};
+    tempCtor.prototype = parentCtor.prototype;
+    childCtor.superClass_ = parentCtor.prototype;
+    childCtor.prototype = new tempCtor();
+    /** @override */
+    childCtor.prototype.constructor = childCtor;
 
-  /**
-   * Calls superclass constructor/method.
-   *
-   * This function is only available if you use goog.inherits to
-   * express inheritance relationships between classes.
-   *
-   * NOTE: This is a replacement for goog.base and for superClass_
-   * property defined in childCtor.
-   *
-   * @param {!Object} me Should always be "this".
-   * @param {string} methodName The method name to call. Calling
-   *     superclass constructor can be done with the special string
-   *     'constructor'.
-   * @param {...*} var_args The arguments to pass to superclass
-   *     method/constructor.
-   * @return {*} The return value of the superclass method/constructor.
-   */
-  childCtor.base = function(me, methodName, var_args) {
-    // Copying using loop to avoid deop due to passing arguments object to
-    // function. This is faster in many JS engines as of late 2014.
-    var args = new Array(arguments.length - 2);
-    for (var i = 2; i < arguments.length; i++) {
-      args[i - 2] = arguments[i];
-    }
-    return parentCtor.prototype[methodName].apply(me, args);
-  };
+    /**
+     * Calls superclass constructor/method.
+     *
+     * This function is only available if you use goog.inherits to
+     * express inheritance relationships between classes.
+     *
+     * NOTE: This is a replacement for goog.base and for superClass_
+     * property defined in childCtor.
+     *
+     * @param {!Object} me Should always be "this".
+     * @param {string} methodName The method name to call. Calling
+     *     superclass constructor can be done with the special string
+     *     'constructor'.
+     * @param {...*} var_args The arguments to pass to superclass
+     *     method/constructor.
+     * @return {*} The return value of the superclass method/constructor.
+     */
+    childCtor.base = function(me, methodName, var_args) {
+        // Copying using loop to avoid deop due to passing arguments object to
+        // function. This is faster in many JS engines as of late 2014.
+        var args = new Array(arguments.length - 2);
+        for (var i = 2; i < arguments.length; i++) {
+            args[i - 2] = arguments[i];
+        }
+        return parentCtor.prototype[methodName].apply(me, args);
+    };
 };
+
+
+defineD = function(namespace) {
+    var last = window,
+        current = '';
+    while (namespace) {
+        current = namespace.indexOf('.') != -1 ? namespace.substring(0, namespace.indexOf('.')) : namespace;
+        namespace = namespace.indexOf('.') != -1 ? namespace.substring(namespace.indexOf('.') + 1) : undefined;
+        last[current] = last[current] || {};
+        last = last[current];
+    }
+    return last;
+};
+
+
+function getXMLResource(url, handler, selector, ) {
+    $.ajax({
+            type: "GET",
+            url: url,
+            dataType: "html"
+        })
+        .done(function(data) {
+            handler($(data));
+        });
+};
+
+openDesign.UI = {
+    init: function() {
+        var self = this;
+        var url = "ui/open/res/ui.xml";
+        var handler = function(data) {
+            self.uiXml = data;
+            var pwindow = self.uiXml.find("#openDesignWindow");
+            $(".openAndSave", "#ui-container").append(pwindow);
+            $("#openDesignWindow .title").html(ResourceManager.getString("open_my_design"));
+            var sc;
+            $.OpenDesign(".contentsWrapper").on('scroll', function(e) {
+                clearTimeout(sc);
+                sc = setTimeout(function(e) {
+                    if (openDesign.Constants.scrollable &&
+                        ($.OpenDesign(".contentsWrapper")[0].scrollHeight == ($.OpenDesign(".contentsWrapper").scrollTop() + $.OpenDesign(".contentsWrapper").height()))
+                    ) {
+                        openDesign.Handler.loadProjectsByUser(adskUser.sid, openDesign.Constants.offset, openDesign.Constants.limit, true);
+                    }
+                }, 200);
+            });
+        };
+        var selector = ".openWd";
+        getXMLResource(url, handler, selector);
+    }
+}
