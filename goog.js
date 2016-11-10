@@ -134,4 +134,31 @@ openDesign.UI = {
         var selector = ".openWd";
         getXMLResource(url, handler, selector);
     }
-}
+};
+
+
+
+hsw.io.request.Catalog.getProductByExternalId = function (externalId, tenant, language) {
+    tenant = tenant || hsw.util.Request._getTenant();
+    language = language || hsw.util.Request._getLanguage();
+
+    var url = hsw.core.Config.CATALOG_SERVICE_API_SERVER + "/api/rest/v2.0/products/" + externalId + "/referenceType/externalId";
+    url = hsw.util.Url.addParams(url, {
+        t: tenant,
+        l: language
+    });
+    url = hsw.util.Request._addParamForModeller(url);
+
+    return hsw.util.Request.getData(url).then(function (resData) {
+        if (!resData || resData.er !== -1 || !resData.items) {
+            return Promise.reject(resData);
+        } else {
+            return resData.items[0];
+        }
+    });
+};
+
+
+
+
+
