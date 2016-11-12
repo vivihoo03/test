@@ -1,0 +1,15 @@
+1.当用户tap一个页面元素时，iOS会在元素周围显示橙色的外框，以表明该元素被tap了。如果你想自己实现tap时的响应效果，可以用以下方法“去除”这个高亮效果
+.-webkit-tap-highlight-color: rgba(0,0,0,0);
+2.禁止用户选择页面文字.
+-webkit-user-select: none;
+3.如果你响应onclick事件，会发现click事件有大约半秒的延迟，这是因为iOS需要等待一段时间来判断用户是点击还是拖动。如想去掉这个延迟，可以用ontouchstart代替onclick
+$(".button").bind("touchstart", handler);
+但这样在桌面浏览器中鼠标点击操作就不要用了。没关系，可以做一下判断。
+if ('ontouchstart' in window) { // mobile version $(".button").bind("touchstart", handler); } else { // desktop version $(".button").bind("click", handler); }
+4.禁止用户拖动页面：
+document.ontouchstart = function(e){ e.preventDefault(); } 5.禁用链接弹出窗口
+-webkit-touch-callout:none
+6.webkit在渲染页面时，会自动调整字体大小,比如横竖屏切换时;
+-webkit-text-size-adjust:none;
+但是如果设置为none,那么会导致页面的缩放功能不能用，最好办法是
+-webkit-text-size-adjust:100%;
